@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Nexus - Intelligent Chat & Image Generation</title>
+    <meta name="description" content="A powerful AI chatbot capable of seamless conversation and vibrant text-to-image generation.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar for configuration (API keys) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class='bx bx-brain'></i> AI Nexus</h2>
+            </div>
+            
+            <div class="settings-panel">
+                <h3>Settings</h3>
+                <div class="input-group">
+                    <label for="model-select">Text Model</label>
+                    <select id="model-select">
+                        <option value="google/gemini-2.5-pro" selected>Gemini 2.5 Pro</option>
+                        <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B Instruct</option>
+                        <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct</option>
+                        <option value="arcee-ai/Trinity-Large-Thinking:featherless-ai">Trinity Large Thinking (HF)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="openrouter-key">OpenRouter API Key</label>
+                    <input type="password" id="openrouter-key" placeholder="sk-or-...">
+                </div>
+                <div class="input-group">
+                    <label for="huggingface-token">Hugging Face Token</label>
+                    <input type="password" id="huggingface-token" placeholder="hf_...">
+                </div>
+                <button id="save-settings-btn" class="primary-btn">Save Settings</button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <header class="chat-header">
+                <div class="header-info">
+                    <h1>Nexus Assistant</h1>
+                    <span class="status-indicator"><span class="dot"></span> Online</span>
+                </div>
+                <button id="clear-chat-btn" title="Clear Conversation"><i class='bx bx-trash'></i></button>
+            </header>
+
+            <div class="chat-history" id="chat-history">
+                <!-- Welcome Message -->
+                <div class="message bot">
+                    <div class="message-content">
+                        Hello! I am Nexus Assistant. I can help you with answering questions or generating images. What would you like to do today?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator hidden" id="typing-indicator">
+                <div class="dot-typing"></div>
+                <div class="dot-typing"></div>
+                <div class="dot-typing"></div>
+            </div>
+
+            <footer class="chat-input-area">
+                <form id="chat-form">
+                    <div class="input-wrapper">
+                        <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required>
+                        <button type="button" id="generate-image-btn" title="Generate Image" class="icon-btn">
+                            <i class='bx bx-image-alt'></i> Generate Image
+                        </button>
+                        <button type="submit" id="send-btn" title="Send Message" class="icon-btn primary">
+                            <i class='bx bx-send'></i>
+                        </button>
+                    </div>
+                </form>
+            </footer>
+        </main>
+    </div>
+    
+    <!-- Image Modal for viewing generated images -->
+    <div id="image-modal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+
+    <script src="script.js?v=3"></script>
+</body>
+</html>
