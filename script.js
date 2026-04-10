@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Configure Marked with Highlight.js
+    marked.setOptions({
+        highlight: function (code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(code, { language: lang }).value;
+            }
+            return hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true
+    });
+
     const MODEL_CONFIG = {
         "google/gemini-2.5-pro": {
             provider: "openrouter",
@@ -20,6 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const DEFAULT_MODEL = "google/gemini-2.5-pro";
 
+    // API CONFIGURATION (Hardcoded as requested)
+    // API CONFIGURATION (Moved to .env for security)
+    const API_CONFIG = {
+        openRouterKey: "YOUR_OPENROUTER_API_KEY", 
+        huggingFaceToken: "YOUR_HUGGINGFACE_TOKEN"
+    };
+
     // DOM Elements
     const chatHistory = document.getElementById('chat-history');
     const chatForm = document.getElementById('chat-form');
@@ -30,8 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Settings Elements
     const modelSelect = document.getElementById('model-select');
-    const openRouterKeyInput = document.getElementById('openrouter-key');
-    const huggingFaceTokenInput = document.getElementById('huggingface-token');
     const saveSettingsBtn = document.getElementById('save-settings-btn');
 
     // Modal Elements
@@ -45,8 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load Settings
     function loadSettings() {
         const model = localStorage.getItem('selected_model');
-        const openRouterKey = localStorage.getItem('openrouter_api_key');
-        const huggingFaceToken = localStorage.getItem('huggingface_token');
 
         if (model && MODEL_CONFIG[model]) {
             modelSelect.value = model;
@@ -54,9 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modelSelect.value = DEFAULT_MODEL;
             localStorage.setItem('selected_model', DEFAULT_MODEL);
         }
-
-        openRouterKeyInput.value = openRouterKey || "";
-        huggingFaceTokenInput.value = huggingFaceToken || "";
     }
 
     loadSettings();
@@ -66,8 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedModel = MODEL_CONFIG[modelSelect.value] ? modelSelect.value : DEFAULT_MODEL;
         modelSelect.value = selectedModel;
         localStorage.setItem('selected_model', selectedModel);
-        localStorage.setItem('openrouter_api_key', openRouterKeyInput.value.trim());
-        localStorage.setItem('huggingface_token', huggingFaceTokenInput.value.trim());
         alert('Settings saved successfully!');
     });
 
@@ -89,13 +99,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalImg.src = this.src;
             }
             contentDiv.appendChild(img);
+        } else if (sender === 'bot') {
+            // Render Markdown for bot messages
+            contentDiv.innerHTML = marked.parse(content);
+            // Highlight any code blocks in the newly added content
+            contentDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
         } else {
+            // Keep user messages as plain text but preserve line breaks
             contentDiv.textContent = content;
+            contentDiv.style.whiteSpace = "pre-wrap";
         }
 
         messageDiv.appendChild(contentDiv);
+
+        if (sender === 'bot' && !isImage) {
+            const footer = document.createElement('div');
+            footer.classList.add('message-footer');
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.classList.add('copy-btn');
+            copyBtn.innerHTML = "<i class='bx bx-copy'></i>";
+            copyBtn.title = "Copy to clipboard";
+            copyBtn.onclick = () => copyToClipboard(content, copyBtn);
+            
+            footer.appendChild(copyBtn);
+            messageDiv.appendChild(footer);
+        }
+
         chatHistory.appendChild(messageDiv);
         scrollToBottom();
+    }
+
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = btn.querySelector('i');
+            icon.className = 'bx bx-check';
+            setTimeout(() => {
+                icon.className = 'bx bx-copy';
+            }, 2000);
+        });
     }
 
     function scrollToBottom() {
@@ -112,11 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function requestOpenRouterChat(selectedModel, modelConfig) {
-        const openRouterKey = localStorage.getItem('openrouter_api_key');
         return fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${openRouterKey}`,
+                "Authorization": `Bearer ${API_CONFIG.openRouterKey}`,
                 "Content-Type": "application/json",
                 "HTTP-Referer": window.location.href,
                 "X-Title": "Nexus Chatbot"
@@ -131,11 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function requestHuggingFaceChat(selectedModel, modelConfig) {
-        const huggingFaceToken = localStorage.getItem('huggingface_token');
         return fetch("https://router.huggingface.co/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${huggingFaceToken}`,
+                "Authorization": `Bearer ${API_CONFIG.huggingFaceToken}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -147,11 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function requestHuggingFaceImage(prompt) {
-        const huggingFaceToken = localStorage.getItem('huggingface_token');
         const response = await fetch("https://router.huggingface.co/nscale/v1/images/generations", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${huggingFaceToken}`,
+                "Authorization": `Bearer ${API_CONFIG.huggingFaceToken}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -187,16 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedModel = MODEL_CONFIG[modelSelect.value] ? modelSelect.value : DEFAULT_MODEL;
         const modelConfig = MODEL_CONFIG[selectedModel];
         const providerLabel = modelConfig.provider === "huggingface" ? "Hugging Face" : "OpenRouter";
-        const openRouterKey = localStorage.getItem('openrouter_api_key');
-        const huggingFaceToken = localStorage.getItem('huggingface_token');
-
-        if (modelConfig.provider === "openrouter" && !openRouterKey) {
-            appendMessage("Please add your OpenRouter API key in Settings and save it.", 'bot');
+        if (modelConfig.provider === "openrouter" && !API_CONFIG.openRouterKey) {
+            appendMessage("OpenRouter API key is missing in the code.", 'bot');
             return;
         }
 
-        if (modelConfig.provider === "huggingface" && !huggingFaceToken) {
-            appendMessage("Please add your Hugging Face token in Settings and save it.", 'bot');
+        if (modelConfig.provider === "huggingface" && !API_CONFIG.huggingFaceToken) {
+            appendMessage("Hugging Face token is missing in the code.", 'bot');
             return;
         }
 
@@ -239,10 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Part E: Text-to-Image Generation
     async function generateImage(prompt) {
-        const huggingFaceToken = localStorage.getItem('huggingface_token');
-
-        if (!huggingFaceToken) {
-            appendMessage("Please add your Hugging Face token in Settings and save it before generating images.", 'bot');
+        if (!API_CONFIG.huggingFaceToken) {
+            appendMessage("Hugging Face token is missing in the code. Image generation requires it.", 'bot');
             return;
         }
 

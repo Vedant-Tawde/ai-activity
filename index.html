@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Markdown and Syntax Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -27,14 +31,6 @@
                         <option value="mistralai/mistral-7b-instruct">Mistral 7B Instruct</option>
                         <option value="arcee-ai/Trinity-Large-Thinking:featherless-ai">Trinity Large Thinking (HF)</option>
                     </select>
-                </div>
-                <div class="input-group">
-                    <label for="openrouter-key">OpenRouter API Key</label>
-                    <input type="password" id="openrouter-key" placeholder="sk-or-...">
-                </div>
-                <div class="input-group">
-                    <label for="huggingface-token">Hugging Face Token</label>
-                    <input type="password" id="huggingface-token" placeholder="hf_...">
                 </div>
                 <button id="save-settings-btn" class="primary-btn">Save Settings</button>
             </div>
