@@ -230,13 +230,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedModel = MODEL_CONFIG[modelSelect.value] ? modelSelect.value : DEFAULT_MODEL;
         const modelConfig = MODEL_CONFIG[selectedModel];
         const providerLabel = modelConfig.provider === "huggingface" ? "Hugging Face" : "OpenRouter";
-        if (modelConfig.provider === "openrouter" && !API_CONFIG.openRouterKey) {
-            appendMessage("OpenRouter API key is missing in the code.", 'bot');
+        const isOpenRouterMissing = !API_CONFIG.openRouterKey || API_CONFIG.openRouterKey === "YOUR_OPENROUTER_API_KEY";
+        const isHuggingFaceMissing = !API_CONFIG.huggingFaceToken || API_CONFIG.huggingFaceToken === "YOUR_HUGGINGFACE_TOKEN";
+
+        if (modelConfig.provider === "openrouter" && isOpenRouterMissing) {
+            appendMessage("OpenRouter API key is missing in the code. If you are on Netlify, please ensure you have added the environment variables and triggered a new build.", 'bot');
             return;
         }
 
-        if (modelConfig.provider === "huggingface" && !API_CONFIG.huggingFaceToken) {
-            appendMessage("Hugging Face token is missing in the code.", 'bot');
+        if (modelConfig.provider === "huggingface" && isHuggingFaceMissing) {
+            appendMessage("Hugging Face token is missing in the code. If you are on Netlify, please ensure you have added the environment variables and triggered a new build.", 'bot');
             return;
         }
 
