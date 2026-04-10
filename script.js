@@ -33,10 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_MODEL = "google/gemini-2.5-pro";
 
     // API CONFIGURATION (Hardcoded as requested)
-    // API CONFIGURATION (Moved to .env for security)
+    // API CONFIGURATION
+    // Uses window.LOCAL_CONFIG for local dev (ignored by git) 
+    // or placeholders for Netlify deployment (injected during build)
     const API_CONFIG = {
-        openRouterKey: "YOUR_OPENROUTER_API_KEY", 
-        huggingFaceToken: "YOUR_HUGGINGFACE_TOKEN"
+        openRouterKey: window.LOCAL_CONFIG?.openRouterKey || "YOUR_OPENROUTER_API_KEY", 
+        huggingFaceToken: window.LOCAL_CONFIG?.huggingFaceToken || "YOUR_HUGGINGFACE_TOKEN"
     };
 
     // DOM Elements
